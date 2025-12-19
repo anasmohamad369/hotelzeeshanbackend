@@ -112,6 +112,24 @@ app.post('/place-order', async (req, res) => {
   const orderData = req.body;
 
   try {
+    // Get today's date range (start and end of day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Count today's orders to generate next token number
+    const todayOrderCount = await Order.countDocuments({
+      date: {
+        $gte: today,
+        $lt: tomorrow
+      }
+    });
+
+    // Generate token: token1, token2, token3, etc.
+    const tokenNumber = todayOrderCount + 1;
+    orderData.token = `token${tokenNumber}`;
+
     // Save to MongoDB
     const newOrder = new Order(orderData);
     await newOrder.save();
