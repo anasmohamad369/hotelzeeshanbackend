@@ -22,6 +22,8 @@ const orderSchema = new mongoose.Schema({
     price: Number
   }],
   total: Number,
+  totalAmount: Number,
+  discount: Number,
   date: { type: Date, default: Date.now }
 });
 
@@ -110,6 +112,7 @@ app.get('/stats', async (req, res) => {
 
 app.post('/place-order', async (req, res) => {
   const orderData = req.body;
+  console.log(orderData  ,'orderData');
 
   try {
     // Get today's date range (start and end of day)
@@ -147,6 +150,19 @@ app.post('/place-order', async (req, res) => {
     console.error('Error processing order:', err);
     res.status(500).json({ success: false, message: 'Failed to process order' });
   }
+});
+
+app.delete('/delete-order', async (req, res) => {
+  const { id } = req.body;
+  await Order.findByIdAndDelete(id);
+  res.json({ success: true, message: 'Order deleted' });
+});
+
+app.put('/update-order', async (req, res) => {
+  const { id, orderData } = req.body;
+  await Order.findByIdAndUpdate(id, orderData);
+  printToken(orderData);
+  res.json({ success: true, message: 'Order updated' });
 });
 
 const PORT = process.env.PORT || 3001;
